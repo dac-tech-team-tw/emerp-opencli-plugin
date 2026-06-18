@@ -167,8 +167,8 @@ cli({
       Fields: fields,
     };
 
-    // Step 3: Save or Submit
-    const endpoint = doSubmit ? 'SubmitForm' : 'SaveForm';
+    // Step 3: Save draft (--submit stores draft then prompts manual submit; auto-submit API not yet found)
+    const endpoint = 'SaveForm';
     const saveResult = await page.evaluate(async (ep, body, baseUrl) => {
       try {
         const res = await fetch(`${baseUrl}/Wfem2030/${ep}`, {
@@ -199,8 +199,8 @@ cli({
     return {
       formId,
       subject,
-      status: doSubmit ? '已送簽' : '草稿已儲存',
-      url: `${BASE_URL}/WFEM/WFEM2010/Index`,
+      status: doSubmit ? '草稿已儲存（請到 WFEM2030 手動送簽）' : '草稿已儲存',
+      url: `${BASE_URL}/WFEM/WFEM2030/Index`,
     };
   },
 });
