@@ -1,0 +1,6 @@
+{
+  "name": "emerp",
+  "version": "0.1.0",
+  "description": "EMERP eFormFlow 簽呈自動化 — 建立草稿、送簽、查詢",
+  "opencli": ">=1.8.4"
+}
