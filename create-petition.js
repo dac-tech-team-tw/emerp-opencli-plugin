@@ -167,8 +167,8 @@ cli({
       Fields: fields,
     };
 
-    // Step 3: Save draft (--submit stores draft then prompts manual submit; auto-submit API not yet found)
-    const endpoint = 'SaveForm';
+    // Step 3: Save draft (or save+send if --submit)
+    const endpoint = doSubmit ? 'SaveAndSendForm' : 'SaveForm';
     const saveResult = await page.evaluate(async (ep, body, baseUrl) => {
       try {
         const res = await fetch(`${baseUrl}/Wfem2030/${ep}`, {
@@ -196,84 +196,7 @@ cli({
       throw new CommandExecutionError(`${endpoint} 未回傳表單 ID，回應：${JSON.stringify(saveResult)}`);
     }
 
-    if (!doSubmit) {
-      return { formId, subject, status: '草稿已儲存', url: `${BASE_URL}/WFEM/WFEM2030/Index` };
-    }
-
-    // Step 4: Submit via UI click (submit API endpoint unknown; use btn-forminfo → ButtonOk flow)
-    await page.goto(`${BASE_URL}/WFEM/WFEM2030/Index`);
-
-    // Suppress the success alert before any clicks
-    await page.evaluate(() => { window.alert = () => {}; window.confirm = () => true; });
-
-    // Open query view, filter 未送簽, search, find our row, click btn-forminfo
-    const formFound = await page.evaluate(async (targetId) => {
-      const $ = window.jQuery;
-      if (!$) return false;
-
-      document.querySelector('#btn-query')?.click();
-      await new Promise(r => setTimeout(r, 1500));
-
-      // Set 未送簽 via Kendo dropdown
-      $('[data-role=dropdownlist]').each(function () {
-        const ddl = $(this).data('kendoDropDownList');
-        if (!ddl) return;
-        if (ddl.dataSource.data().some(o => o.value === '0' && o.text === '未送簽')) {
-          ddl.value('0');
-          ddl.trigger('change');
-        }
-      });
-      await new Promise(r => setTimeout(r, 500));
-
-      // Click 查詢 button if present (some views auto-query on dropdown change, some need a click)
-      Array.from(document.querySelectorAll('a.btn, button'))
-        .find(b => b.innerText?.trim() === '查詢')?.click();
-      await new Promise(r => setTimeout(r, 2000));
-
-      // Find our form row in any Kendo grid on this page
-      let found = false;
-      $('[data-role=grid]').each(function () {
-        if (found) return;
-        const grid = $(this).data('kendoGrid');
-        if (!grid) return;
-        const items = grid.dataSource.data();
-        for (let i = 0; i < items.length; i++) {
-          if (items[i].FM11001 === targetId) {
-            grid.tbody.find(`[data-uid="${items[i].uid}"]`).find('.btn-forminfo')[0]?.click();
-            found = true;
-            break;
-          }
-        }
-      });
-      return found;
-    }, formId);
-
-    if (!formFound) {
-      throw new CommandExecutionError(
-        `在 WFEM2030 找不到草稿（formId: ${formId}），請手動到 WFEM2030 送簽。`
-      );
-    }
-
-    // Wait for form to render and ButtonOk to appear, then click it
-    let submitClicked = false;
-    for (let i = 0; i < 15; i++) {
-      await new Promise(r => setTimeout(r, 400));
-      submitClicked = await page.evaluate(() => {
-        window.alert = () => {};
-        const btn = document.querySelector('.ButtonOk');
-        if (!btn) return false;
-        btn.click();
-        return true;
-      });
-      if (submitClicked) break;
-    }
-
-    if (!submitClicked) {
-      throw new CommandExecutionError('找不到送簽按鈕，請手動到 WFEM2030 送簽。');
-    }
-
-    await new Promise(r => setTimeout(r, 1500));
-
-    return { formId, subject, status: '已送簽', url: `${BASE_URL}/WFEM/WFEM2030/Index` };
+    const status = doSubmit ? '已送簽' : '草稿已儲存';
+    return { formId, subject, status, url: `${BASE_URL}/WFEM/WFEM2030/Index` };
   },
 });
