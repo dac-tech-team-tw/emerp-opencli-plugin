@@ -4,6 +4,24 @@
 
 ---
 
+## 快速安裝（Windows，一行搞定）
+
+開啟 **PowerShell**，貼上執行：
+
+```powershell
+irm https://raw.githubusercontent.com/dac-tech-team-tw/emerp-opencli-plugin/main/install.ps1 | iex
+```
+
+會自動完成 Node.js、OpenCLI、Plugin 的安裝與驗證。
+
+> 安裝完畢後，仍需手動完成 **第三步（Chrome 擴充功能）**。
+
+---
+
+## 手動安裝步驟
+
+---
+
 ## 第一步：安裝 Node.js
 
 opencli 需要 Node.js 執行環境。
