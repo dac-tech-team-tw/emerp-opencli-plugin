@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-function Write-Step($n, $msg) { Write-Host "`n[$n/4] $msg" -ForegroundColor Yellow }
+function Write-Step($n, $msg) { Write-Host "`n[$n/5] $msg" -ForegroundColor Yellow }
 function Write-OK($msg)       { Write-Host "  OK  $msg" -ForegroundColor Green }
 function Write-Info($msg)     { Write-Host "      $msg" -ForegroundColor Gray }
 
@@ -68,8 +68,16 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
 
 Write-OK "Plugin 安裝完成"
 
-# ── 4. 驗證 ─────────────────────────────────────────────────────────────────
-Write-Step 4 "驗證安裝"
+# ── 4. Claude Code Skill ────────────────────────────────────────────────────
+Write-Step 4 "安裝 Claude Code skill"
+
+$skillUrl = "https://github.com/dac-tech-team-tw/emerp-opencli-plugin/tree/main/.claude/skills/emerp-petition"
+Write-Info "安裝 emerp-petition skill 到 Claude Code..."
+npx skills add $skillUrl -a claude-code -y
+Write-OK "Skill 安裝完成"
+
+# ── 5. 驗證 ─────────────────────────────────────────────────────────────────
+Write-Step 5 "驗證安裝"
 opencli emerp --help
 
 Write-Host ""
@@ -78,5 +86,5 @@ Write-Host ""
 Write-Host "  下一步：" -ForegroundColor Cyan
 Write-Host "  1. 開啟 Chrome，登入 EMERP：http://10.0.250.60/eFormFlow/" -ForegroundColor White
 Write-Host "  2. 確認右上角 OpenCLI 擴充功能圖示顯示「已連線」" -ForegroundColor White
-Write-Host "  3. 執行 opencli emerp create-petition '主旨' '說明'" -ForegroundColor White
+Write-Host "  3. 在 Claude Code 直接說「幫我寫一份簽呈，申請...」" -ForegroundColor White
 Write-Host ""
